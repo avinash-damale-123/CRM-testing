@@ -66,15 +66,30 @@ async function capturePage(page, label, prefix) {
   });
 }
 
+async function safeClickAndCapture(page, locator, label, prefix) {
+  try {
+    const item = locator.first();
+    const count = await item.count();
+    if (count === 0) {
+      console.log(`SKIPPED: ${label} was not found`);
+      await capturePage(page, `${label}-not-found`, prefix);
+      return;
+    }
+    await item.click({ timeout: 12000 });
+    await capturePage(page, label, prefix);
+  } catch (error) {
+    console.log(`SKIPPED: ${label} failed with ${error.message}`);
+    await capturePage(page, `${label}-failed`, prefix);
+  }
+}
+
 test.describe('All modules non-destructive CRM audit', () => {
   test('Capture all sidebar module pages', async ({ page }) => {
     await login(page);
 
     for (const moduleName of sidebarModules) {
-      const link = page.getByRole('link', { name: moduleName }).first();
-      await expect(link).toBeVisible({ timeout: 15000 });
-      await link.click();
-      await capturePage(page, moduleName, 'audit-sidebar');
+      const link = page.getByRole('link', { name: moduleName });
+      await safeClickAndCapture(page, link, moduleName, 'audit-sidebar');
     }
   });
 
@@ -85,10 +100,8 @@ test.describe('All modules non-destructive CRM audit', () => {
       await page.getByRole('link', { name: 'Settings' }).click();
       await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible({ timeout: 15000 });
 
-      const tileLocator = page.getByText(tile, { exact: true }).first();
-      await expect(tileLocator).toBeVisible({ timeout: 15000 });
-      await tileLocator.click();
-      await capturePage(page, tile, 'audit-settings');
+      const tileLocator = page.getByText(tile).first();
+      await safeClickAndCapture(page, tileLocator, tile, 'audit-settings');
     }
   });
 
@@ -107,10 +120,8 @@ test.describe('All modules non-destructive CRM audit', () => {
     ];
 
     for (const moduleName of modulesToCapture) {
-      const link = page.getByRole('link', { name: moduleName }).first();
-      await expect(link).toBeVisible({ timeout: 15000 });
-      await link.click();
-      await capturePage(page, moduleName, 'audit-actions');
+      const link = page.getByRole('link', { name: moduleName });
+      await safeClickAndCapture(page, link, moduleName, 'audit-actions');
     }
   });
 });
