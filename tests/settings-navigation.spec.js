@@ -7,8 +7,10 @@ test('Login and verify Settings tiles open', async ({ page }) => {
   await page.getByLabel(/password/i).fill(process.env.CRM_PASSWORD);
   await page.getByRole('button', { name: /login|sign in/i }).click();
 
+  // Confirm login success by checking that the Settings link is visible in the sidebar
   await expect(page.getByRole('link', { name: 'Settings' })).toBeVisible({ timeout: 20000 });
 
+  // Open Settings page directly
   await page.goto(process.env.CRM_URL.replace('/login', '/settings'));
   await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible({ timeout: 15000 });
 
@@ -41,7 +43,9 @@ test('Login and verify Settings tiles open', async ({ page }) => {
 
   for (const tile of tiles) {
     await page.goto(process.env.CRM_URL.replace('/login', '/settings'));
+
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(tile, { exact: true })).toBeVisible({ timeout: 15000 });
 
     await page.getByText(tile, { exact: true }).click();
     await page.waitForTimeout(2000);
