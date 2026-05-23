@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-test('Login and verify Settings page opens', async ({ page }) => {
+test('Login and open Settings page', async ({ page }) => {
   await page.goto(process.env.CRM_URL);
 
   await page.getByLabel(/email/i).fill(process.env.CRM_EMAIL);
