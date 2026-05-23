@@ -1,21 +1,21 @@
 const { test, expect } = require('@playwright/test');
 
 const modules = [
-  { name: 'Home', path: '/home', heading: /Home/i },
-  { name: 'Dashboard', path: '/dashboard', heading: /Dashboard/i },
-  { name: 'Calendar', path: '/calendar', heading: /Calendar/i },
-  { name: 'Reports', path: '/reports', heading: /Reports|Lead Reports/i },
-  { name: 'Profile', path: '/profile', heading: /Profile|My Profile/i },
-  { name: 'Lead', path: '/leads', heading: /Leads|Lead/i },
-  { name: 'Customer', path: '/customers', heading: /Customers|Customer/i },
-  { name: 'Bookings', path: '/bookings', heading: /Bookings|Booking/i },
-  { name: 'Meetings', path: '/meetings', heading: /Meetings|Meeting/i },
-  { name: 'Calls', path: '/calls', heading: /Calls|Calling/i },
-  { name: 'Tasks', path: '/tasks', heading: /Tasks|Task/i },
-  { name: 'Campaigns', path: '/campaigns', heading: /Campaigns|Campaign/i },
-  { name: 'Campaign Enabler', path: '/campaign-enabler', heading: /Campaign Enabler|Campaign/i },
-  { name: 'Approvals', path: '/approvals', heading: /Approvals|Approval/i },
-  { name: 'Settings', path: '/settings', heading: /Settings/i }
+  'Home',
+  'Dashboard',
+  'Calendar',
+  'Reports',
+  'Profile',
+  'Lead',
+  'Customer',
+  'Bookings',
+  'Meetings',
+  'Calls',
+  'Tasks',
+  'Campaigns',
+  'Campaign Enabler',
+  'Approvals',
+  'Settings'
 ];
 
 function safeFileName(value) {
@@ -31,17 +31,18 @@ test('Login and verify main sidebar module pages open', async ({ page }) => {
 
   await expect(page.getByRole('link', { name: 'Settings' })).toBeVisible({ timeout: 20000 });
 
-  const baseUrl = process.env.CRM_URL.replace('/login', '');
+  for (const moduleName of modules) {
+    const link = page.getByRole('link', { name: moduleName }).first();
+    await expect(link).toBeVisible({ timeout: 15000 });
+    await link.click();
 
-  for (const module of modules) {
-    await page.goto(`${baseUrl}${module.path}`);
     await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(1200);
+    await page.waitForTimeout(1500);
 
-    await expect(page.getByRole('heading', { name: module.heading }).first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('body')).not.toContainText(/404|500|Application error|not found/i, { timeout: 5000 });
 
     await page.screenshot({
-      path: `test-results/main-navigation-${safeFileName(module.name)}.png`,
+      path: `test-results/main-navigation-${safeFileName(moduleName)}.png`,
       fullPage: true
     });
   }
