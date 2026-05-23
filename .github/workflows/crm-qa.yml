@@ -2,6 +2,8 @@ name: Retail CRM QA Tests
 
 on:
   workflow_dispatch:
+  push:
+    branches: [ main ]
 
 jobs:
   test:
